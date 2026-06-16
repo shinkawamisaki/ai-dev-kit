@@ -1,0 +1,14 @@
+diff --git a/src/worker.py b/src/worker.py
+index 1111111..2222222 100644
+--- a/src/worker.py
++++ b/src/worker.py
+@@ -3,7 +3,9 @@ import logging
+
+ def process(job):
+-    return run(job)
++    try:
++        return run(job)
++    except Exception as e:
++        # swallows the error and leaks internal detail into the log
++        logging.error("failed: " + str(e))
++        pass

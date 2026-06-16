@@ -1,0 +1,12 @@
+# promptfoo
+.promptfoo/
+promptfoo-errors.log
+output.json
+
+# Node
+node_modules/
+
+# OS / editor
+.DS_Store
+__pycache__/
+*.pyc

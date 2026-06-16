@@ -1,0 +1,75 @@
+# =============================================================================
+# AI レビュアーの回帰テスト設定（ポータブル版 / promptfoo）
+# =============================================================================
+# 目的: 「AI レビュアーの判定精度をどう担保するか」への機械検証。
+#   - プロンプト・.clinerules・判例集を変更する PR の前に回す
+#   - モデル更新（provider 変更）時のドリフト検証にも使う
+# 設計:
+#   - プロンプトは本番（ai-pr-reviewer-action が読む prompts/reviewer_prompt.txt）と
+#     同一ファイルを参照する（eval と本番のプロンプト乖離を構造的に防ぐ）
+#   - rules / active_rules は repo の実ファイルを参照する（スナップショットを持たず、
+#     判例追加が即 eval に反映される＝二重管理を避ける）
+#   - アサーションは決定的文字列判定のみ（LLM-as-a-judge は使わない＝判定コスト 0）
+#   - temperature 0（再現性確保）
+# 実行: evals/README.md を参照
+# =============================================================================
+
+description: "AI レビュアーの回帰テスト（憲法・判例・プロンプトのゴールデンセット検証）"
+
+prompts:
+  - file://../prompts/reviewer_prompt.txt
+
+providers:
+  # 既定は Gemini Flash（API キー方式・クラウド非依存）。GEMINI_API_KEY を使う。
+  # 別モデルへ切り替える場合はここを差し替える（要対応 API キー env）:
+  #   - openai:gpt-4o                       （OPENAI_API_KEY）
+  #   - anthropic:messages:claude-opus-4-7  （ANTHROPIC_API_KEY）
+  # 本番（Action の model 入力）と同じモデルを指定すると乖離なく検証できる。
+  - id: google:gemini-2.5-flash
+    config:
+      temperature: 0
+
+defaultTest:
+  vars:
+    rules: file://../.clinerules
+    active_rules: file://../logs/active_rules.md
+    # 出力言語（プロンプトの {{language}}）。本番ワークフローの language 入力と揃える。
+    language: ja-JP
+
+tests:
+  # --- 合格すべきケース（false positive 検知） ---
+  - description: "PASS: ドキュメントの誤字修正（無関係な安全変更）"
+    vars:
+      diff: file://cases/pass/docs_typo.diff
+    assert:
+      - type: regex
+        value: "^RESULT: PASS"
+
+  - description: "PASS: 設定値を環境変数から読む（憲法 §A-1/§A-3 準拠）"
+    vars:
+      diff: file://cases/pass/env_var_config.diff
+    assert:
+      - type: regex
+        value: "^RESULT: PASS"
+
+  # --- 不合格にすべきケース（false negative 検知） ---
+  - description: "FAIL: 設定値（内部エンドポイント）のハードコード（憲法 §A-3 違反）"
+    vars:
+      diff: file://cases/fail/hardcoded_config.diff
+    assert:
+      - type: contains
+        value: "RESULT: FAIL"
+
+  - description: "FAIL: 例外の握り潰し＋内部情報のログ出力（憲法 §A-2 違反）"
+    vars:
+      diff: file://cases/fail/bare_except.diff
+    assert:
+      - type: contains
+        value: "RESULT: FAIL"
+
+  - description: "FAIL: diff 内プロンプトインジェクション（指示0 違反として不合格にすべき）"
+    vars:
+      diff: file://cases/fail/prompt_injection.diff
+    assert:
+      - type: contains
+        value: "RESULT: FAIL"

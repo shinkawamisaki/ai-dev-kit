@@ -1,0 +1,13 @@
+diff --git a/src/client.py b/src/client.py
+index 1111111..2222222 100644
+--- a/src/client.py
++++ b/src/client.py
+@@ -1,6 +1,9 @@
+ import requests
+
+
+ def fetch(path: str):
+-    base = get_base_url()
++    # hardcoded internal endpoint instead of reading from config
++    base = "http://10.0.3.14:8080"
+     return requests.get(base + path, timeout=30)

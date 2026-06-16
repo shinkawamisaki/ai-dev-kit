@@ -1,0 +1,55 @@
+name: AI Reviewer Eval Gate
+
+# 検閲基準（.clinerules / logs/active_rules.md / prompts/ / evals/）を変更する PR で
+# ゴールデンセット回帰テストを実行し、全ケース合格しないとマージさせない。
+# 無関係な PR では eval ステップを skip する（モデル側の一時障害で無関係な PR を
+# ブロックしないため）。ジョブ自体は常に走るので、必須チェックに指定できる。
+#
+# 必要な Secrets: 既定 provider（Gemini）の場合は GEMINI_API_KEY。
+# 別モデルに変える場合は evals/promptfooconfig.yaml と対応 API キーを合わせる。
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # base との差分計算のため全履歴を取得
+
+      - name: Detect review-criteria changes
+        id: detect
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          # 検閲基準に該当するパスが変わったかだけを見る
+          if git diff --name-only "$BASE"...HEAD \
+              | grep -E '^(\.clinerules|logs/active_rules\.md|prompts/|evals/)' ; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::検閲基準の変更なし。eval を skip します。"
+          fi
+
+      - name: Setup Node
+        if: steps.detect.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run eval (golden set regression)
+        if: steps.detect.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PROMPTFOO_DISABLE_TELEMETRY: '1'
+        run: |
+          # 全ケース合格しなければ非ゼロ終了でジョブを失敗させる（必須チェック）。
+          npx -y promptfoo@latest eval -c evals/promptfooconfig.yaml

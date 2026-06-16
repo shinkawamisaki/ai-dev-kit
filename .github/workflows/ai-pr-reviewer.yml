@@ -1,0 +1,42 @@
+name: AI PR Reviewer
+
+# PR を AI レビュアーで検閲する。エンジンは ai-pr-reviewer-action（タグ配布で更新追従）。
+# モデルは GitHub Variables（AI_REVIEWER_MODEL）で切り替えられる。
+# 必要な Secrets: 使うモデルに対応した API キー（GEMINI_API_KEY / ANTHROPIC_API_KEY /
+# OPENAI_API_KEY のいずれか）。
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write   # Draft=Pending ゲートを運ぶ commit status の投稿に必要
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # フォークからの PR には Secrets が渡らないため、同一リポジトリの PR のみ実行する。
+      - name: Run AI PR Reviewer
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: shinkawamisaki/ai-pr-reviewer-action@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # モデルは Variables で一元管理（未設定なら Gemini Flash）。
+          model: ${{ vars.AI_REVIEWER_MODEL || 'gemini/gemini-2.5-flash' }}
+          # 使うモデルに対応するキーだけ設定すればよい（他は空でよい）。
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          # 審査基準（すべて base コミットから読まれる＝自己参照の遮断）。
+          rules_file: '.clinerules'
+          active_rules_file: 'logs/active_rules.md'
+          prompt_file: 'prompts/reviewer_prompt.txt'
+          # fail-closed（判定不能はブロック）。出力言語。
+          strict_verify: 'true'
+          language: 'ja-JP'

@@ -1,0 +1,12 @@
+diff --git a/README.md b/README.md
+index 1111111..2222222 100644
+--- a/README.md
++++ b/README.md
+@@ -10,7 +10,7 @@ To get started, install the dependencies and run the server.
+
+ ## Configuration
+
+-The applicaiton reads its settings from the environment.
++The application reads its settings from the environment.
+
+ ## License

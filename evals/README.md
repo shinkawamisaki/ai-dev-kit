@@ -1,0 +1,58 @@
+# AI レビュアーの回帰テスト (promptfoo evals)
+
+AI レビュアー（PR 時の自動検閲）の判定精度を、ゴールデンセット（合格すべき diff /
+不合格にすべき diff）に対する回帰テストで機械検証する。
+
+## 設計原則
+
+- **本番と同一のプロンプトをテストする**: `prompts/reviewer_prompt.txt` を、本番の
+  AI レビュアー（`ai-pr-reviewer-action`）と本設定の両方が参照する。eval と本番の
+  プロンプト乖離を構造的に防ぐ。
+- **憲法・判例は repo の実ファイルを参照する**: スナップショットを持たない。判例
+  （`logs/active_rules.md`）の追加が即 eval に反映され、二重管理を避ける。
+- **判定は決定的文字列マッチのみ**: `RESULT: PASS` / `RESULT: FAIL` の一致判定。
+  LLM-as-a-judge は使わず、eval のコストはテスト対象モデルの呼び出し分のみ。
+- **temperature 0**: 再現性を確保する。
+
+## 実行方法
+
+```bash
+export GEMINI_API_KEY=...     # 既定 provider（Gemini）の場合
+./evals/run.sh                # これだけで実行できる
+npx promptfoo@latest view     # 結果をブラウザで確認（任意）
+```
+
+- 実行には Node.js が必要（`npx` のみ使用・グローバルインストール不要）。
+- コスト目安: 1回 = ケース数 × モデル呼び出し1回。数ケースなら数円規模。
+- 別モデルで検証する場合は `promptfooconfig.yaml` の `providers` と、対応する
+  API キー env（`OPENAI_API_KEY` 等）を合わせる。**本番の `model` 入力と同じモデル**を
+  指定すると乖離なく検証できる。
+
+## いつ回るか（検証ループ）
+
+**CI が自動で強制する**: 検閲基準（`.clinerules` / `logs/active_rules.md` / `prompts/` /
+`evals/`）を変更する PR では、`.github/workflows/eval-gate.yml` が eval を実行し、
+**全ケース合格しないとマージできない**（必須チェックに設定した場合）。無関係な PR では
+eval ステップを skip する（モデル側の一時障害が無関係な PR をブロックする半径拡大を避ける）。
+
+ローカルの `./evals/run.sh` は「PR を出す前の事前確認」用として併存する。
+
+> **判例とゴールデンセットの連動**: 人間判断が出たら `judgments.md`（証跡）と
+> `active_rules.md`（判例）に加えて、該当ケースの diff を `cases/pass|fail/` に追加する。
+> 判例がそのまま「正解データ」になり、同じ判定ミスの再発を機械的に検知できる。
+
+## ケースの追加方法
+
+1. `cases/pass/` または `cases/fail/` に git diff 形式のファイルを置く。
+2. `promptfooconfig.yaml` の `tests:` にエントリを追加する。
+   - 合格ケース: `regex: "^RESULT: PASS"`
+   - 不合格ケース: `contains: "RESULT: FAIL"`
+
+### フィクスチャ作成時の注意
+
+- **実シークレットに似せない**: 偽の API キー・トークン等は secret スキャナ（gitleaks 等）が
+  実シークレットと誤検知して PR をブロックし得る。ハードコード違反をテストしたい場合は、
+  スキャナの正規表現に掛からない形（内部 IP・エンドポイント直書き等）で表現する。
+- **攻撃パターンはテストデータ**: `cases/fail/` のインジェクション文・違反コードはテスト
+  データであり、本番の AI レビュアーはこれを `evals/cases/` 配下に限り通常コードとして
+  扱う（diff 内の指示は指示0 により実行しない）。
