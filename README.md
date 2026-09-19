@@ -28,7 +28,11 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 1. **「Use this template」** で新リポジトリを作成。
 2. **API キーを登録**（Settings > Secrets and variables > Actions > **Repository secrets**）。使うモデルの分だけ:
    `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY`。Environment secrets に入れてもワークフローからは
-   見えないので注意。Gemini の無料枠は毎分の上限が小さいため、eval は既定で直列実行にしてある（`evals/README.md`）。
+   見えないので注意。
+   **Gemini の無料枠（AI Studio、課金なし）は `gemini-2.5-flash` で 1 日 20 リクエスト**（2026-09 時点、
+   `GenerateRequestsPerDayPerProjectPerModel-FreeTier`）しかなく、レビュー 1 回＝1 リクエスト、eval 1 回＝ケース数分の
+   リクエストを消費する。実運用ではキーのプロジェクトで課金を有効にする（従量課金で数円/回）か、Vertex AI を使うこと。
+   上限に達すると 429 が返り、eval はリトライとキュー待ちで数十分かけて失敗する。
 3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-opus-4-7`）。
    未設定なら `gemini/gemini-2.5-flash`。
 4. **`.clinerules` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
