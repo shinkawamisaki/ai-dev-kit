@@ -31,10 +31,13 @@ PROVIDER_ARGS=()
 
 # provider に対応する API キーがあるかを先に確認する（無いと promptfoo が全件 ERROR になる）。
 case "${PROMPTFOO_PROVIDER:-google:}" in
-  google:*|vertex:*)
+  google:*)
     if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
       echo "[ERROR] GEMINI_API_KEY（または GOOGLE_API_KEY）が未設定です。Google AI Studio で取得して設定してください。" >&2; exit 1
     fi ;;
+  vertex:*)
+    # Vertex AI は API キーではなく ADC（gcloud auth application-default login / WIF）で認証する。ここでは確認しない
+    ;;
   anthropic:*)
     [ -n "${ANTHROPIC_API_KEY:-}" ] || { echo "[ERROR] ANTHROPIC_API_KEY が未設定です（provider=$PROMPTFOO_PROVIDER）。" >&2; exit 1; } ;;
   openai:*)
