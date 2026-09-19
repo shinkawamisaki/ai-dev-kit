@@ -26,8 +26,9 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 ## クイックスタート（5 ステップ）
 
 1. **「Use this template」** で新リポジトリを作成。
-2. **API キーを登録**（Settings > Secrets and variables > Actions > Secrets）。使うモデルの分だけ:
-   `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY`。
+2. **API キーを登録**（Settings > Secrets and variables > Actions > **Repository secrets**）。使うモデルの分だけ:
+   `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY`。Environment secrets に入れてもワークフローからは
+   見えないので注意。Gemini の無料枠は毎分の上限が小さいため、eval は既定で直列実行にしてある（`evals/README.md`）。
 3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-opus-4-7`）。
    未設定なら `gemini/gemini-2.5-flash`。
 4. **`.clinerules` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。

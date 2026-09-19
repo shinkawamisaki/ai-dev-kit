@@ -22,7 +22,11 @@ export GEMINI_API_KEY=...     # 既定 provider（Gemini）の場合
 npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
 ```
 
-- 実行には Node.js が必要（`npx` のみ使用・グローバルインストール不要）。
+- 実行には Node.js **22.22 以上**が必要（`npx` のみ使用・グローバルインストール不要。promptfoo の要求）。
+- **レート制限**: Google AI Studio の無料枠は毎分のリクエスト上限が小さく、ケースを並列に投げると
+  429 で詰まって eval が数十分かかった末に失敗する。`run.sh` は既定で直列（`--max-concurrency 1`）
+  かつ 2 秒間隔にしてある。有料枠や Vertex AI なら `PROMPTFOO_MAX_CONCURRENCY=4 PROMPTFOO_DELAY_MS=0`
+  で速くできる。5xx は `PROMPTFOO_RETRY_5XX` で自動リトライする。
 - コスト目安: 1回 = ケース数 × モデル呼び出し1回。数ケースなら数円規模。
 - 別モデルで検証する場合は `promptfooconfig.yaml` の `providers` と、対応する
   API キー env（`OPENAI_API_KEY` 等）を合わせる。**本番の `model` 入力と同じモデル**を

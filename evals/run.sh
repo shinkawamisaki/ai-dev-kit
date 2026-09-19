@@ -17,6 +17,10 @@ PROMPTFOO_VERSION="${PROMPTFOO_VERSION:-0.123.1}"
 export PROMPTFOO_DISABLE_TELEMETRY="${PROMPTFOO_DISABLE_TELEMETRY:-1}"
 # モデル側の一時障害（503 overloaded 等）で落ちないよう 5xx を自動リトライする
 export PROMPTFOO_RETRY_5XX="${PROMPTFOO_RETRY_5XX:-true}"
+# Gemini の無料枠（毎分のリクエスト上限が小さい）でも 429 で詰まらないよう、既定は直列実行＋間隔あり。
+# 有料枠や Vertex AI なら PROMPTFOO_MAX_CONCURRENCY=4 PROMPTFOO_DELAY_MS=0 で速くできる。
+PROMPTFOO_MAX_CONCURRENCY="${PROMPTFOO_MAX_CONCURRENCY:-1}"
+PROMPTFOO_DELAY_MS="${PROMPTFOO_DELAY_MS:-2000}"
 
 # 既定 provider 用の API キー確認（別 provider に変えた場合はこのチェックを調整）。
 if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
@@ -28,4 +32,4 @@ if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
 fi
 
 echo "[INFO] promptfoo@${PROMPTFOO_VERSION} eval を実行します。"
-npx -y "promptfoo@${PROMPTFOO_VERSION}" eval "$@"
+npx -y "promptfoo@${PROMPTFOO_VERSION}" eval --max-concurrency "$PROMPTFOO_MAX_CONCURRENCY" --delay "$PROMPTFOO_DELAY_MS" "$@"
