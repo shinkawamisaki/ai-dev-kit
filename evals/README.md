@@ -18,8 +18,8 @@ AI レビュアー（PR 時の自動検閲）の判定精度を、ゴールデ�
 
 ```bash
 export GEMINI_API_KEY=...     # 既定 provider（Gemini）の場合
-./evals/run.sh                # これだけで実行できる
-npx promptfoo@latest view     # 結果をブラウザで確認（任意）
+./evals/run.sh                # これだけで実行できる（promptfoo のバージョンは run.sh で固定）
+npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
 ```
 
 - 実行には Node.js が必要（`npx` のみ使用・グローバルインストール不要）。
@@ -54,5 +54,9 @@ eval ステップを skip する（モデル側の一時障害が無関係な PR
   実シークレットと誤検知して PR をブロックし得る。ハードコード違反をテストしたい場合は、
   スキャナの正規表現に掛からない形（内部 IP・エンドポイント直書き等）で表現する。
 - **攻撃パターンはテストデータ**: `cases/fail/` のインジェクション文・違反コードはテスト
-  データであり、本番の AI レビュアーはこれを `evals/cases/` 配下に限り通常コードとして
-  扱う（diff 内の指示は指示0 により実行しない）。
+  データ。本番の AI レビュアーがこれを審査すると指示 0 により FAIL になるため、
+  `.github/workflows/ai-pr-reviewer.yml` の `exclude_patterns` で `evals/cases/*` を
+  レビュー対象から外している（ケース追加 PR の担保は eval-gate と人間レビュー）。
+  この除外を消すと、判例を固定化する PR が通らなくなる。
+- **`npx promptfoo@latest view` について**: 結果閲覧は任意。eval 本体は `run.sh` が固定
+  したバージョンで動く。

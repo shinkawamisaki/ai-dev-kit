@@ -52,4 +52,5 @@ jobs:
           PROMPTFOO_DISABLE_TELEMETRY: '1'
         run: |
           # 全ケース合格しなければ非ゼロ終了でジョブを失敗させる（必須チェック）。
-          npx -y promptfoo@latest eval -c evals/promptfooconfig.yaml
+          # promptfoo のバージョンは evals/run.sh の 1 か所で固定している。
+          ./evals/run.sh

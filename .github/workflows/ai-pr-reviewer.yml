@@ -40,3 +40,8 @@ jobs:
           # fail-closed（判定不能はブロック）。出力言語。
           strict_verify: 'true'
           language: 'ja-JP'
+          # レビュー対象から外すパス。Action の既定値に evals/cases/ を足している。
+          # ゴールデンセット（特に fail ケース）には違反コードや注入文がそのまま入るため、
+          # これを審査すると指示 0 により FAIL になり、判例を固定化する PR が通らなくなる。
+          # evals/cases/ の変更は eval-gate（回帰テスト）と人間レビューで担保する。
+          exclude_patterns: '*-lock.json,*-lock.yaml,*.lock,dist/*,node_modules/*,vendor/*,evals/cases/*'

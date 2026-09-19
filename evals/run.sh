@@ -10,6 +10,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# promptfoo のバージョン（CI もこのスクリプトを呼ぶので、固定はここ 1 か所）。
+# 上げるときは手元で ./evals/run.sh を回し、全ケース合格を確認してから変更する。
+PROMPTFOO_VERSION="${PROMPTFOO_VERSION:-0.123.1}"
+
 export PROMPTFOO_DISABLE_TELEMETRY="${PROMPTFOO_DISABLE_TELEMETRY:-1}"
 
 # 既定 provider 用の API キー確認（別 provider に変えた場合はこのチェックを調整）。
@@ -21,5 +25,5 @@ if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
   exit 1
 fi
 
-echo "[INFO] promptfoo eval を実行します。"
-npx -y promptfoo@latest eval "$@"
+echo "[INFO] promptfoo@${PROMPTFOO_VERSION} eval を実行します。"
+npx -y "promptfoo@${PROMPTFOO_VERSION}" eval "$@"

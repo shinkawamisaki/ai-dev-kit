@@ -18,6 +18,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 | `logs/active_rules.md` / `judgments.md` | 判例の二層構造（現行判例 / 証跡） |
 | `evals/` | promptfoo によるゴールデンセット回帰テスト |
 | `docs/QUALITY_FEEDBACK_LOOP.md` | 体制の「なぜ」（レイヤー構造と責任分界） |
+| `CLAUDE.md` | Claude Code 向けの入口（`.clinerules` を取り込むだけ。ルールは重複させない） |
 
 エンジン（検閲ロジック）は外部 Action に切り出してあるので、改善は `@v3` のタグ更新で
 全プロジェクトに届く（コピーしたまま腐らない）。
@@ -30,8 +31,12 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-opus-4-7`）。
    未設定なら `gemini/gemini-2.5-flash`。
 4. **`.clinerules` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
-5. **必須チェックに設定**（Settings > Branches > Branch protection）: `AI PR Reviewer` と
-   `eval-gate` を required にする。これでゲートが強制になる。
+5. **必須チェックに設定**（Settings > Branches > Branch protection）: 次の 2 つを required にする。
+   - **コミットステータス `AI PR Reviewer`**（Action が投稿する context）。ワークフローのジョブ
+     `review` ではなくこちらを指定する。フォークからの PR や Draft ではレビューが走らないが、
+     ステータス必須なら pending のまま止まる（fail-closed）。ジョブを必須にすると素通りになる。
+   - **ジョブ `eval-gate`**。検閲基準を変えない PR では eval を skip して成功するので、
+     常に必須にしてよい。
 
 これで PR を出すと AI 検閲が走る。`./evals/run.sh`（要 `GEMINI_API_KEY`）でローカル確認も可能。
 
@@ -48,6 +53,9 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 - **モデル選択**（`AI_REVIEWER_MODEL`）、**出力言語**（ワークフローの `language`）。
 - **Layer 2 の A（静的解析ツール）**: secret スキャン・lint・SAST は言語/スタックに応じて
   自由に追加・差し替え（このキットには同梱していない＝あなたのスタックに合わせるスロット）。
+- **レビュー除外パス**（ワークフローの `exclude_patterns`）: 生成物やロックファイルは足してよい。
+  ただし `evals/cases/*` の除外は外さない（外すと、注入文を含む fail ケースを追加する PR が
+  指示 0 により FAIL し、判例を固定化できなくなる）。
 
 ### ⛔ 変えない（構造的担保層 / 変えると検閲の強制力が失われる）
 
@@ -66,6 +74,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 ```
 あなたの新リポジトリ（このテンプレから生成）
 ├── .clinerules                    ← §A 共通 / §B 固有（あなたが埋める）
+├── CLAUDE.md                      ← Claude Code の入口（@.clinerules を取り込むだけ）
 ├── prompts/reviewer_prompt.txt    ← 本番と eval が共有（構造的担保）
 ├── logs/
 │   ├── active_rules.md            ← 判例（AI が読む・upsert）
@@ -75,18 +84,30 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 │   ├── run.sh
 │   └── cases/{pass,fail}/*.diff
 ├── docs/QUALITY_FEEDBACK_LOOP.md  ← 体制の「なぜ」
-└── .github/workflows/
-    ├── ai-pr-reviewer.yml         ← エンジン呼び出し（@v3）
-    └── eval-gate.yml              ← 検閲基準変更時の回帰ゲート
+├── .github/workflows/
+│   ├── ai-pr-reviewer.yml         ← エンジン呼び出し（@v3）
+│   └── eval-gate.yml              ← 検閲基準変更時の回帰ゲート
+└── LICENSE / NOTICE               ← Apache-2.0
 ```
 
-## GCP/Terraform で「クラウド側の回避不能な検閲」が要る場合
+## このキットの限界（より強い統制が要る場合）
 
-このキットは GitHub Actions ベース（API キーで動く・どこでも使える）。AI エージェントが
-CI 設定ごと書き換えるのを物理的に防ぎたい、keyless（WIF/ADC）にしたい、といった高統制
-要件がある場合は、Cloud Build 版（`pr_reviewer.py` + Terraform 配線）の方が上位互換。
-そちらは別途 GCP 特化テンプレートを参照。
+このキットは GitHub Actions ベース（API キーで動く・どこでも使える）。次のような要件は
+Actions だけでは満たせないので、CI をリポジトリの外（例: クラウド側のビルドサービス）に
+置く構成を別途検討してほしい。
+
+- AI エージェントが CI 設定（`.github/workflows/`）ごと書き換えるのを**物理的に**防ぎたい
+- API キーを持たず、keyless（Workload Identity 等）で動かしたい
+- フォークからの PR も含めて、レビューを一切スキップさせたくない（Actions ではフォーク PR に
+  Secrets が渡らないため、このキットはフォーク PR でレビューを走らせない）
+
+## 依存の固定
+
+- AI レビュアーの Action は `@v3`（メジャーの移動タグ）を参照している。改善を自動で受け取る
+  代わりに、タグの移動を信頼することになる。より厳密にしたい場合はコミット SHA で固定する。
+- promptfoo は `evals/run.sh` でバージョンを固定している（CI も同じスクリプトを呼ぶ）。
+  上げるときは手元で `./evals/run.sh` を回し、全ケース合格を確認してから変える。
 
 ## ライセンス
 
-Apache License 2.0
+Apache License 2.0（[LICENSE](LICENSE)）。英語版の概要は [README_EN.md](README_EN.md)。
