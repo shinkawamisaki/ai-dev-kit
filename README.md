@@ -33,8 +33,10 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
    `GenerateRequestsPerDayPerProjectPerModel-FreeTier`）しかなく、レビュー 1 回＝1 リクエスト、eval 1 回＝ケース数分の
    リクエストを消費する。実運用ではキーのプロジェクトで課金を有効にする（従量課金で数円/回）か、Vertex AI を使うこと。
    上限に達すると 429 が返り、eval はリトライとキュー待ちで数十分かけて失敗する。
-3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-opus-4-7`）。
-   未設定なら `gemini/gemini-2.5-flash`。
+3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-sonnet-5`）。
+   未設定なら `gemini/gemini-2.5-flash`。回帰テスト側も同じモデルにするなら `EVAL_PROVIDER` を
+   promptfoo の書式で設定する（例 `anthropic:messages:claude-sonnet-5`。未設定なら Gemini）。
+   コードを書く AI と同じモデルをレビュアーにしない（下の「変えない層」参照）。
 4. **`.clinerules` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
 5. **必須チェックに設定**（Settings > Branches > Branch protection）: 次の 2 つを required にする。
    - **コミットステータス `AI PR Reviewer`**（Action が投稿する context）。ワークフローのジョブ
@@ -55,7 +57,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 - **`.clinerules` §B**: プロジェクト固有ルール。ここがあなたの「設計思想」。
 - **`logs/active_rules.md` / `judgments.md`**: 運用で増えていく判例。
 - **`evals/cases/`**: ゴールデンセット。判例を足したらここにケースを足す。
-- **モデル選択**（`AI_REVIEWER_MODEL`）、**出力言語**（ワークフローの `language`）。
+- **モデル選択**（`AI_REVIEWER_MODEL`、回帰テストは `EVAL_PROVIDER`）、**出力言語**（ワークフローの `language`）。
 - **Layer 2 の A（静的解析ツール）**: secret スキャン・lint・SAST は言語/スタックに応じて
   自由に追加・差し替え（このキットには同梱していない＝あなたのスタックに合わせるスロット）。
 - **レビュー除外パス**（ワークフローの `exclude_patterns`）: 生成物やロックファイルは足してよい。

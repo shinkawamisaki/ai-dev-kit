@@ -53,6 +53,9 @@ jobs:
           PROMPTFOO_DISABLE_TELEMETRY: '1'
           # モデル側の一時障害（503 overloaded 等）で eval を落とさないよう 5xx を自動リトライ
           PROMPTFOO_RETRY_5XX: 'true'
+          # 検証に使う provider（GitHub Variables の EVAL_PROVIDER。未設定なら config の既定 Gemini）。
+          # 本番の AI_REVIEWER_MODEL と同じモデルを promptfoo の書式で指定する（例: anthropic:messages:claude-sonnet-5）。
+          PROMPTFOO_PROVIDER: ${{ vars.EVAL_PROVIDER }}
         run: |
           # 全ケース合格しなければ非ゼロ終了でジョブを失敗させる（必須チェック）。
           # promptfoo のバージョンは evals/run.sh の 1 か所で固定している。

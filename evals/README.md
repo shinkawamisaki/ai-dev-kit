@@ -30,9 +30,10 @@ npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
   かつ 2 秒間隔にしてある。有料枠や Vertex AI なら `PROMPTFOO_MAX_CONCURRENCY=4 PROMPTFOO_DELAY_MS=0`
   で速くできる。5xx は `PROMPTFOO_RETRY_5XX` で自動リトライする。
 - コスト目安: 1回 = ケース数 × モデル呼び出し1回。数ケースなら数円規模。
-- 別モデルで検証する場合は `promptfooconfig.yaml` の `providers` と、対応する
-  API キー env（`OPENAI_API_KEY` 等）を合わせる。**本番の `model` 入力と同じモデル**を
-  指定すると乖離なく検証できる。
+- 別モデルで検証する場合は、設定ファイルを書き換えず `PROMPTFOO_PROVIDER`（CI では GitHub
+  Variables の `EVAL_PROVIDER`）で上書きできる。例: `PROMPTFOO_PROVIDER=anthropic:messages:claude-sonnet-5 ./evals/run.sh`
+  （対応する API キー env が必要。`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`）。**本番の `model` 入力と同じ
+  モデル**を指定すると乖離なく検証できる。
 
 ## いつ回るか（検証ループ）
 

@@ -22,14 +22,24 @@ export PROMPTFOO_RETRY_5XX="${PROMPTFOO_RETRY_5XX:-true}"
 PROMPTFOO_MAX_CONCURRENCY="${PROMPTFOO_MAX_CONCURRENCY:-1}"
 PROMPTFOO_DELAY_MS="${PROMPTFOO_DELAY_MS:-2000}"
 
-# 既定 provider 用の API キー確認（別 provider に変えた場合はこのチェックを調整）。
-if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
-  echo "[ERROR] GEMINI_API_KEY（または GOOGLE_API_KEY）が未設定です。" >&2
-  echo "        Google AI Studio で取得し、環境変数に設定してください。" >&2
-  echo "        別モデルを使う場合は evals/promptfooconfig.yaml の provider と" >&2
-  echo "        対応する API キー env（OPENAI_API_KEY 等）に合わせてください。" >&2
-  exit 1
-fi
+# 検証に使う provider。未指定なら promptfooconfig.yaml の既定（Gemini）。
+# 本番の AI_REVIEWER_MODEL と同じモデルを promptfoo の書式で指定すると乖離なく検証できる:
+#   google:gemini-2.5-flash / anthropic:messages:claude-sonnet-5 / openai:gpt-4o
+PROMPTFOO_PROVIDER="${PROMPTFOO_PROVIDER:-}"
+PROVIDER_ARGS=()
+[ -n "$PROMPTFOO_PROVIDER" ] && PROVIDER_ARGS=(--providers "$PROMPTFOO_PROVIDER")
 
-echo "[INFO] promptfoo@${PROMPTFOO_VERSION} eval を実行します。"
-npx -y "promptfoo@${PROMPTFOO_VERSION}" eval --max-concurrency "$PROMPTFOO_MAX_CONCURRENCY" --delay "$PROMPTFOO_DELAY_MS" "$@"
+# provider に対応する API キーがあるかを先に確認する（無いと promptfoo が全件 ERROR になる）。
+case "${PROMPTFOO_PROVIDER:-google:}" in
+  google:*|vertex:*)
+    if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
+      echo "[ERROR] GEMINI_API_KEY（または GOOGLE_API_KEY）が未設定です。Google AI Studio で取得して設定してください。" >&2; exit 1
+    fi ;;
+  anthropic:*)
+    [ -n "${ANTHROPIC_API_KEY:-}" ] || { echo "[ERROR] ANTHROPIC_API_KEY が未設定です（provider=$PROMPTFOO_PROVIDER）。" >&2; exit 1; } ;;
+  openai:*)
+    [ -n "${OPENAI_API_KEY:-}" ] || { echo "[ERROR] OPENAI_API_KEY が未設定です（provider=$PROMPTFOO_PROVIDER）。" >&2; exit 1; } ;;
+esac
+
+echo "[INFO] promptfoo@${PROMPTFOO_VERSION} eval を実行します（provider: ${PROMPTFOO_PROVIDER:-config 既定}）。"
+npx -y "promptfoo@${PROMPTFOO_VERSION}" eval --max-concurrency "$PROMPTFOO_MAX_CONCURRENCY" --delay "$PROMPTFOO_DELAY_MS" "${PROVIDER_ARGS[@]}" "$@"
