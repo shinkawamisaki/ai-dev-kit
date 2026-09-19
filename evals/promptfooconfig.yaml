@@ -73,3 +73,10 @@ tests:
     assert:
       - type: contains
         value: "RESULT: FAIL"
+
+  - description: "FAIL: IAM ポリシーのワイルドカード付与（憲法 §A-4 最小権限 違反）"
+    vars:
+      diff: file://cases/fail/wildcard_iam.diff
+    assert:
+      - type: contains
+        value: "RESULT: FAIL"
