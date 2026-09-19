@@ -51,6 +51,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PROMPTFOO_DISABLE_TELEMETRY: '1'
+          # モデル側の一時障害（503 overloaded 等）で eval を落とさないよう 5xx を自動リトライ
+          PROMPTFOO_RETRY_5XX: 'true'
         run: |
           # 全ケース合格しなければ非ゼロ終了でジョブを失敗させる（必須チェック）。
           # promptfoo のバージョンは evals/run.sh の 1 か所で固定している。

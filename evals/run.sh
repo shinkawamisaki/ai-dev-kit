@@ -15,6 +15,8 @@ cd "$(dirname "$0")"
 PROMPTFOO_VERSION="${PROMPTFOO_VERSION:-0.123.1}"
 
 export PROMPTFOO_DISABLE_TELEMETRY="${PROMPTFOO_DISABLE_TELEMETRY:-1}"
+# モデル側の一時障害（503 overloaded 等）で落ちないよう 5xx を自動リトライする
+export PROMPTFOO_RETRY_5XX="${PROMPTFOO_RETRY_5XX:-true}"
 
 # 既定 provider 用の API キー確認（別 provider に変えた場合はこのチェックを調整）。
 if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${GOOGLE_API_KEY:-}" ]; then
