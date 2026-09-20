@@ -2,7 +2,7 @@
 # AI レビュアーの回帰テスト設定（ポータブル版 / promptfoo）
 # =============================================================================
 # 目的: 「AI レビュアーの判定精度をどう担保するか」への機械検証。
-#   - プロンプト・.clinerules・判例集を変更する PR の前に回す
+#   - プロンプト・AGENTS.md・判例集を変更する PR の前に回す
 #   - モデル更新（provider 変更）時のドリフト検証にも使う
 # 設計:
 #   - プロンプトは本番（ai-pr-reviewer-action が読む prompts/reviewer_prompt.txt）と
@@ -31,7 +31,7 @@ providers:
 
 defaultTest:
   vars:
-    rules: file://../.clinerules
+    rules: file://../AGENTS.md
     active_rules: file://../logs/active_rules.md
     # 出力言語（プロンプトの {{language}}）。本番ワークフローの language 入力と揃える。
     language: ja-JP

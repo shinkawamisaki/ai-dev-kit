@@ -7,11 +7,11 @@ AI による主観的検証（設計思想に基づく判断）と、ツール�
 ## レイヤー構造
 
 ```
-Layer 0  コーディング        writer（AI エージェント）+ .clinerules
+Layer 0  コーディング        writer（AI エージェント）+ AGENTS.md
 Layer 1  pre-commit（任意）   secret スキャン・lint・フォーマッタ（ローカル即時・skip 可）
 Layer 2  PR 時の自動検査      ── 強制ゲート ──
            A: 静的解析（外部標準ツール / 言語・スタックに応じて差し替え）
-           D: AI レビュアー（.clinerules + logs/active_rules.md / 設計思想の判断）
+           D: AI レビュアー（AGENTS.md + logs/active_rules.md / 設計思想の判断）
            + D の回帰テスト（eval・検閲基準を変える PR のみ）
 Layer 3  人間レビュー         最終ゲート（CODEOWNERS 等）
 ```
@@ -24,7 +24,7 @@ AI へ**。これを混ぜない。
 | 種別 | 担当 | 根拠 | フィードバックの向き |
 |---|---|---|---|
 | A: 静的解析（secret/lint/SAST 等） | 外部ツール | 公式ルールセット・標準 | 設定で緩める方向 |
-| D: AI レビュアー | このキット | `.clinerules`（憲法）+ `logs/active_rules.md`（判例） | **判例蓄積で精度を上げる方向** |
+| D: AI レビュアー | このキット | `AGENTS.md`（憲法）+ `logs/active_rules.md`（判例） | **判例蓄積で精度を上げる方向** |
 
 > A（外部ツール）は「ツールのカバレッジ限界」で取りこぼす。D（AI）は「判例の不足／
 > プロンプトの曖昧さ」で取りこぼす。**D だけが、判例を足すほど賢くなる**。この非対称が

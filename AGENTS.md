@@ -3,6 +3,9 @@
 このファイルは AI レビュアー（PR 時の自動検閲）と、開発を担う AI エージェント（writer）の
 **双方が読む正典**です。`prompts/reviewer_prompt.txt` の `{{rules}}` に流し込まれます。
 
+> ファイル名 `AGENTS.md` は「このリポジトリで働く AI エージェントへの指示」を置く共通規約に合わせたもの。
+> Cline を使う場合は `ln -s AGENTS.md .clinerules` で同じ内容を読ませられる。
+>
 > このファイルは ai-dev-kit のテンプレートです。**§A は原則そのまま使い**、
 > **§B をあなたのプロジェクト固有のルールで埋めてください**。
 > 詳しい使い方は [README.md](README.md) と [docs/QUALITY_FEEDBACK_LOOP.md](docs/QUALITY_FEEDBACK_LOOP.md)。
