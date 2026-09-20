@@ -22,11 +22,18 @@ export GEMINI_API_KEY=...     # 既定 provider（Gemini）の場合
 npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
 ```
 
-- 実行には Node.js が必要（`npx` のみ使用・グローバルインストール不要）。
+- 実行には Node.js **22.22 以上**が必要（`npx` のみ使用・グローバルインストール不要。promptfoo の要求）。
+- **レート制限と日次上限**: Google AI Studio の無料枠は `gemini-2.5-flash` で **1 日 20 リクエスト**（2026-09 時点）。
+  eval 1 回で `cases/` のケース数分のリクエストを消費するので、無料枠では 1 日に数回しか回せない。上限に達すると 429 が返り、
+  リトライとキュー待ちで数十分かけて失敗する。実運用では課金を有効にするか Vertex AI を使うこと。
+  また毎分の上限も小さいため、ケースを並列に投げると 429 で詰まりやすい。`run.sh` は既定で直列（`--max-concurrency 1`）
+  かつ 2 秒間隔にしてある。有料枠や Vertex AI なら `PROMPTFOO_MAX_CONCURRENCY=4 PROMPTFOO_DELAY_MS=0`
+  で速くできる。5xx は `PROMPTFOO_RETRY_5XX` で自動リトライする。
 - コスト目安: 1回 = ケース数 × モデル呼び出し1回。数ケースなら数円規模。
-- 別モデルで検証する場合は `promptfooconfig.yaml` の `providers` と、対応する
-  API キー env（`OPENAI_API_KEY` 等）を合わせる。**本番の `model` 入力と同じモデル**を
-  指定すると乖離なく検証できる。
+- 別モデルで検証する場合は、設定ファイルを書き換えず `PROMPTFOO_PROVIDER`（CI では GitHub
+  Variables の `EVAL_PROVIDER`）で上書きできる。例: `PROMPTFOO_PROVIDER=anthropic:messages:claude-sonnet-5 ./evals/run.sh`
+  （対応する API キー env が必要。`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`）。**本番の `model` 入力と同じ
+  モデル**を指定すると乖離なく検証できる。
 
 ## いつ回るか（検証ループ）
 

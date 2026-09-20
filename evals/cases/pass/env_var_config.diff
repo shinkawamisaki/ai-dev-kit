@@ -2,9 +2,8 @@ diff --git a/src/config.py b/src/config.py
 index 1111111..2222222 100644
 --- a/src/config.py
 +++ b/src/config.py
-@@ -1,8 +1,11 @@
+@@ -1,8 +1,10 @@
  import os
-+from typing import Optional
 
 
  def get_db_host() -> str:
