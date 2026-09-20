@@ -37,7 +37,7 @@ npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
 
 ## いつ回るか（検証ループ）
 
-**CI が自動で強制する**: 検閲基準（`.clinerules` / `logs/active_rules.md` / `prompts/` /
+**CI が自動で強制する**: 検閲基準（`AGENTS.md` / `logs/active_rules.md` / `prompts/` /
 `evals/`）を変更する PR では、`.github/workflows/eval-gate.yml` が eval を実行し、
 **全ケース合格しないとマージできない**（必須チェックに設定した場合）。無関係な PR では
 eval ステップを skip する（モデル側の一時障害が無関係な PR をブロックする半径拡大を避ける）。

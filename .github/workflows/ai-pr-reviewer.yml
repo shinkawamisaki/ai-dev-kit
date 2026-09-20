@@ -34,7 +34,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           # 審査基準（すべて base コミットから読まれる＝自己参照の遮断）。
-          rules_file: '.clinerules'
+          rules_file: 'AGENTS.md'
           active_rules_file: 'logs/active_rules.md'
           prompt_file: 'prompts/reviewer_prompt.txt'
           # fail-closed（判定不能はブロック）。出力言語。

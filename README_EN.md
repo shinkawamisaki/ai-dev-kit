@@ -14,8 +14,8 @@ a swappable model.
 |---|---|
 | `.github/workflows/ai-pr-reviewer.yml` | AI review of every PR (engine: [ai-pr-reviewer-action](https://github.com/shinkawamisaki/ai-pr-reviewer-action), pinned to a major tag) |
 | `.github/workflows/eval-gate.yml` | Forces the regression test on PRs that change the review criteria |
-| `.clinerules` | The review rules ("constitution"), read by both the AI reviewer and the AI writer |
-| `CLAUDE.md` | Entry point for Claude Code; only imports `.clinerules` |
+| `AGENTS.md` | The review rules ("constitution"), read by both the AI reviewer and the AI writer |
+| `CLAUDE.md` | Entry point for Claude Code; only imports `AGENTS.md` |
 | `prompts/reviewer_prompt.txt` | The review prompt. Production and eval read the **same** file |
 | `logs/active_rules.md` / `judgments.md` | Two-layer precedents (current rules / append-only evidence) |
 | `evals/` | Golden-set regression test with promptfoo |
@@ -28,7 +28,7 @@ a swappable model.
    `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`.
 3. Optionally pick a model with the Actions variable `AI_REVIEWER_MODEL`
    (default: `gemini/gemini-2.5-flash`).
-4. Fill in section B of `.clinerules` with your project-specific rules. Section A can stay as is.
+4. Fill in section B of `AGENTS.md` with your project-specific rules. Section A can stay as is.
 5. Make two checks required in branch protection: the commit status **`AI PR Reviewer`**
    (posted by the action; it stays pending for fork PRs and drafts, which is the fail-closed
    behaviour you want) and the job **`eval-gate`**.
@@ -38,7 +38,7 @@ regression test locally.
 
 ## What you may change, and what you must not
 
-**Policy layer (change freely):** `.clinerules` section B, the precedents under `logs/`, the golden
+**Policy layer (change freely):** `AGENTS.md` section B, the precedents under `logs/`, the golden
 set under `evals/cases/`, the model, the output language, and your own static-analysis tools.
 
 **Structural guarantees (changing them removes the enforcement):**

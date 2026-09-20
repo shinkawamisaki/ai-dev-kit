@@ -13,12 +13,12 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 |---|---|
 | `.github/workflows/ai-pr-reviewer.yml` | PR を AI が検閲（エンジン: [ai-pr-reviewer-action](https://github.com/shinkawamisaki/ai-pr-reviewer-action)・タグ配布で更新追従） |
 | `.github/workflows/eval-gate.yml` | 検閲基準を変える PR で回帰テストを強制 |
-| `.clinerules` | レビュー基準（憲法）。AI レビュアーと writer の正典 |
+| `AGENTS.md` | レビュー基準（憲法）。AI レビュアーと writer の正典 |
 | `prompts/reviewer_prompt.txt` | 検閲プロンプト（本番と eval が**同一**を参照） |
 | `logs/active_rules.md` / `judgments.md` | 判例の二層構造（現行判例 / 証跡） |
 | `evals/` | promptfoo によるゴールデンセット回帰テスト |
 | `docs/QUALITY_FEEDBACK_LOOP.md` | 体制の「なぜ」（レイヤー構造と責任分界） |
-| `CLAUDE.md` | Claude Code 向けの入口（`.clinerules` を取り込むだけ。ルールは重複させない） |
+| `CLAUDE.md` | Claude Code 向けの入口（`AGENTS.md` を取り込むだけ。ルールは重複させない） |
 
 エンジン（検閲ロジック）は外部 Action に切り出してあるので、改善は `@v3` のタグ更新で
 全プロジェクトに届く（コピーしたまま腐らない）。
@@ -37,7 +37,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
    未設定なら `gemini/gemini-2.5-flash`。回帰テスト側も同じモデルにするなら `EVAL_PROVIDER` を
    promptfoo の書式で設定する（例 `anthropic:messages:claude-sonnet-5`。未設定なら Gemini）。
    コードを書く AI と同じモデルをレビュアーにしない（下の「変えない層」参照）。
-4. **`.clinerules` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
+4. **`AGENTS.md` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
 5. **必須チェックに設定**（Settings > Branches > Branch protection）: 次の 2 つを required にする。
    - **コミットステータス `AI PR Reviewer`**（Action が投稿する context）。ワークフローのジョブ
      `review` ではなくこちらを指定する。フォークからの PR や Draft ではレビューが走らないが、
@@ -54,7 +54,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 
 ### ✅ 変えてよい（ポリシー層）
 
-- **`.clinerules` §B**: プロジェクト固有ルール。ここがあなたの「設計思想」。
+- **`AGENTS.md` §B**: プロジェクト固有ルール。ここがあなたの「設計思想」。
 - **`logs/active_rules.md` / `judgments.md`**: 運用で増えていく判例。
 - **`evals/cases/`**: ゴールデンセット。判例を足したらここにケースを足す。
 - **モデル選択**（`AI_REVIEWER_MODEL`、回帰テストは `EVAL_PROVIDER`）、**出力言語**（ワークフローの `language`）。
@@ -80,8 +80,8 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 
 ```
 あなたの新リポジトリ（このテンプレから生成）
-├── .clinerules                    ← §A 共通 / §B 固有（あなたが埋める）
-├── CLAUDE.md                      ← Claude Code の入口（@.clinerules を取り込むだけ）
+├── AGENTS.md                    ← §A 共通 / §B 固有（あなたが埋める）
+├── CLAUDE.md                      ← Claude Code の入口（@AGENTS.md を取り込むだけ）
 ├── prompts/reviewer_prompt.txt    ← 本番と eval が共有（構造的担保）
 ├── logs/
 │   ├── active_rules.md            ← 判例（AI が読む・upsert）

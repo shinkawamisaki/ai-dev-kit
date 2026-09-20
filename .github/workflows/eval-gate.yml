@@ -1,6 +1,6 @@
 name: AI Reviewer Eval Gate
 
-# 検閲基準（.clinerules / logs/active_rules.md / prompts/ / evals/）を変更する PR で
+# 検閲基準（AGENTS.md / logs/active_rules.md / prompts/ / evals/）を変更する PR で
 # ゴールデンセット回帰テストを実行し、全ケース合格しないとマージさせない。
 # 無関係な PR では eval ステップを skip する（モデル側の一時障害で無関係な PR を
 # ブロックしないため）。ジョブ自体は常に走るので、必須チェックに指定できる。
@@ -30,7 +30,7 @@ jobs:
           BASE="origin/${{ github.base_ref }}"
           # 検閲基準に該当するパスが変わったかだけを見る
           if git diff --name-only "$BASE"...HEAD \
-              | grep -E '^(\.clinerules|logs/active_rules\.md|prompts/|evals/)' ; then
+              | grep -E '^(AGENTS\.md|logs/active_rules\.md|prompts/|evals/)' ; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
