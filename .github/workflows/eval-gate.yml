@@ -56,6 +56,10 @@ jobs:
           # 検証に使う provider（GitHub Variables の EVAL_PROVIDER。未設定なら config の既定 Gemini）。
           # 本番の AI_REVIEWER_MODEL と同じモデルを promptfoo の書式で指定する（例: anthropic:messages:claude-sonnet-5）。
           PROMPTFOO_PROVIDER: ${{ vars.EVAL_PROVIDER }}
+          # 並列数と間隔（GitHub Variables）。未設定なら run.sh の既定（直列・2 秒間隔＝無料枠向け）。
+          # 有料枠や Vertex AI なら PROMPTFOO_MAX_CONCURRENCY=4 / PROMPTFOO_DELAY_MS=0 で 1 分程度に短縮できる。
+          PROMPTFOO_MAX_CONCURRENCY: ${{ vars.PROMPTFOO_MAX_CONCURRENCY }}
+          PROMPTFOO_DELAY_MS: ${{ vars.PROMPTFOO_DELAY_MS }}
         run: |
           # 全ケース合格しなければ非ゼロ終了でジョブを失敗させる（必須チェック）。
           # promptfoo のバージョンは evals/run.sh の 1 か所で固定している。

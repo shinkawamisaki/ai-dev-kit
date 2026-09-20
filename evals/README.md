@@ -28,7 +28,7 @@ npx promptfoo@0.123.1 view    # 結果をブラウザで確認（任意）
   リトライとキュー待ちで数十分かけて失敗する。実運用では課金を有効にするか Vertex AI を使うこと。
   また毎分の上限も小さいため、ケースを並列に投げると 429 で詰まりやすい。`run.sh` は既定で直列（`--max-concurrency 1`）
   かつ 2 秒間隔にしてある。有料枠や Vertex AI なら `PROMPTFOO_MAX_CONCURRENCY=4 PROMPTFOO_DELAY_MS=0`
-  で速くできる。5xx は `PROMPTFOO_RETRY_5XX` で自動リトライする。
+  で速くできる（CI では同名の GitHub Variables で指定）。5xx は `PROMPTFOO_RETRY_5XX` で自動リトライする。
 - コスト目安: 1回 = ケース数 × モデル呼び出し1回。数ケースなら数円規模。
 - 別モデルで検証する場合は、設定ファイルを書き換えず `PROMPTFOO_PROVIDER`（CI では GitHub
   Variables の `EVAL_PROVIDER`）で上書きできる。例: `PROMPTFOO_PROVIDER=anthropic:messages:claude-sonnet-5 ./evals/run.sh`
