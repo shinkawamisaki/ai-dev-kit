@@ -36,6 +36,8 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 3. **（任意）モデルを選ぶ**（同 > Variables）: `AI_REVIEWER_MODEL`（例 `claude-sonnet-5`）。
    未設定なら `gemini/gemini-2.5-flash`。回帰テスト側も同じモデルにするなら `EVAL_PROVIDER` を
    promptfoo の書式で設定する（例 `anthropic:messages:claude-sonnet-5`。未設定なら Gemini）。
+   有料枠なら `PROMPTFOO_MAX_CONCURRENCY`（例 `4`）と `PROMPTFOO_DELAY_MS`（例 `0`）も Variables に置くと
+   回帰テストが 1 分程度で終わる（未設定なら無料枠向けに直列・2 秒間隔）。
    コードを書く AI と同じモデルをレビュアーにしない（下の「変えない層」参照）。
 4. **`AGENTS.md` の §B を埋める**（あなたのプロジェクト固有ルール）。§A はそのままでよい。
 5. **必須チェックに設定**（Settings > Branches > Branch protection）: 次の 2 つを required にする。
