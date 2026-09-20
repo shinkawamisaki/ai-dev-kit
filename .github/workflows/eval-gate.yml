@@ -41,7 +41,8 @@ jobs:
         if: steps.detect.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # promptfoo（evals/run.sh で固定）が要求する Node.js に合わせる。promptfoo を上げるときはここも確認する
+          node-version: '22'
 
       - name: Run eval (golden set regression)
         if: steps.detect.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
