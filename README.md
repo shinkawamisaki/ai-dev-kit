@@ -19,6 +19,7 @@ PR を AI が検閲し、その検閲精度自体を回帰テストで担保し�
 | `evals/` | promptfoo によるゴールデンセット回帰テスト |
 | `docs/QUALITY_FEEDBACK_LOOP.md` | 体制の「なぜ」（レイヤー構造と責任分界） |
 | `CLAUDE.md` | Claude Code 向けの入口（`AGENTS.md` を取り込むだけ。ルールは重複させない） |
+| `.coderabbit.yaml` | CodeRabbit 併用時に `AGENTS.md` を規約として自動検出させない設定（AI レビュアーと独立させる。未使用なら無視される） |
 
 エンジン（検閲ロジック）は外部 Action に切り出してあるので、改善は `@v3` のタグ更新で
 全プロジェクトに届く（コピーしたまま腐らない）。

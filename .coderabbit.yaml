@@ -1,0 +1,14 @@
+# CodeRabbit 設定（ai-dev-kit テンプレート）
+#
+# このキットでは AI レビュアー（D: ai-pr-reviewer-action）が AGENTS.md（憲法）と
+# logs/active_rules.md（判例）を根拠に審査する。CodeRabbit は **/AGENTS.md や
+# **/CLAUDE.md を「コーディング規約」として自動検出する仕様のため、何もしないと
+# D と同じ憲法で二重に審査する状態になる（docs/QUALITY_FEEDBACK_LOOP.md「Layer 2 の
+# 責任分界」参照）。
+#
+# 規約の自動検出を明示的に切り、CodeRabbit を「憲法を知らない、業界標準ベースの
+# 素のレビュアー」として D と独立させる。CodeRabbit を使わないリポではこのファイルは
+# 無視されるので、置いたままで害はない。
+knowledge_base:
+  code_guidelines:
+    enabled: false
